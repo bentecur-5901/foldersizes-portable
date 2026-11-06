@@ -1,0 +1,207 @@
+---
+date: {{date}}
+section: 1
+title: gdu
+---
+
+# NAME
+
+gdu - Pretty fast disk usage analyzer written in Go
+
+# SYNOPSIS
+
+**gdu \[flags\] \[directory_to_scan...\]**
+
+# DESCRIPTION
+
+Pretty fast disk usage analyzer written in Go.
+
+Gdu is intended primarily for SSD disks where it can fully utilize
+parallel processing. However HDDs work as well, but the performance gain
+is not so huge.
+
+More than one directory can be given. They are scanned one after another
+and presented together under a virtual top level directory named
+"(multiple)", listed by their absolute path. Nested directories are
+rejected, as scanning both would count the nested part twice. Exporting
+(\--output-file) and database storage (\--db) accept a single directory
+only.
+
+# OPTIONS
+
+**-h**, **\--help**\[=false\] help for gdu
+
+**-i**, **\--ignore-dirs**=\[/proc,/dev,/sys,/run\]
+    Paths to ignore (separated by comma).
+    Supports both absolute and relative paths.
+
+**-I**, **\--ignore-dirs-pattern**
+    Path patterns to ignore (separated by comma).
+    Supports both absolute and relative path patterns.
+
+**-X**, **\--ignore-from**
+    Read path patterns to ignore from file.
+    Supports both absolute and relative path patterns.
+
+**-G**, **\--ignore-from-gitignore**
+    Read directories to ignore from file with .gitignore-style patterns.
+    A name without / matches at any depth, a trailing / marks a directory,
+    a leading / anchors the pattern to the directory being scanned. Blank
+    lines and comments are skipped. Negated patterns (starting with !) and
+    patterns matching every directory (such as * or **) are rejected with
+    an error, as both would make gdu report less than is really on disk.
+    -I, -X and -G combine: a directory is ignored if it matches any of
+    them. Paths from -i apply in addition.
+
+**-T**, **\--type** File types to include (e.g., --type yaml,json)
+
+**-E**, **\--exclude-type** File types to exclude (e.g., --exclude-type yaml,json)
+
+**\--max-age** Include files with mtime no older than DURATION (e.g., 7d, 2h30m, 1y2mo)
+
+**\--min-age** Include files with mtime at least DURATION old (e.g., 30d, 1w)
+
+**\--since** Include files with mtime >= WHEN. WHEN accepts RFC3339 timestamp (e.g., 2025-08-11T01:00:00-07:00) or date only YYYY-MM-DD (calendar-day compare; includes the whole day)
+
+**\--until** Include files with mtime <= WHEN. WHEN accepts RFC3339 timestamp or date only YYYY-MM-DD
+
+**-l**, **\--log-file**=\"/dev/null\" Path to a logfile
+
+**-m**, **\--max-cores** Set max cores that Gdu will use.
+
+**\--sequential**\[=false\] Use sequential scanning (intended for rotating HDDs)
+
+**-c**, **\--no-color**\[=false\] Do not use colorized output
+
+**-x**, **\--no-cross**\[=false\] Do not cross filesystem boundaries
+
+**-H**, **\--no-hidden**\[=false\] Ignore hidden directories (beginning with dot)
+
+**-L**, **\--follow-symlinks**\[=false\] Follow symlinks for files, i.e. show the
+size of the file to which symlink points to (symlinks to directories are not followed)
+
+**-A**, **\--show-annexed-size**\[=false\] Use apparent size of git-annex'ed files
+in case files are not present locally (real usage is zero)
+
+**\--exclusive-size**\[=false\] Linux only: report disk usage of files as the
+bytes not shared with other files through reflinks (FS_IOC_FIEMAP extents without
+the shared flag), i.e. what deleting them would free. Falls back to the allocated
+blocks where this cannot be measured; ignored on other platforms
+
+**-n**, **\--non-interactive**\[=false\] Do not run in interactive mode
+
+**\--interactive**\[=false\] Force interactive mode even when output is not a TTY
+
+**-p**, **\--no-progress**\[=false\] Do not show progress in
+non-interactive mode
+
+**-u**, **\--no-unicode**\[=false\] Do not use Unicode symbols (for size bar)
+
+**-s**, **\--summarize**\[=false\] Show only a total in non-interactive mode
+
+**-t**, **\--top**\[=0\] Show only top X largest files in non-interactive mode
+
+**\--reverse-sort**\[=false\] Reverse the sorting order in non-interactive mode (smallest to largest by default)
+
+**-d**, **\--show-disks**\[=false\] Show all mounted disks
+
+**-a**, **\--show-apparent-size**\[=false\] Show apparent size
+
+**-B**, **\--show-relative-size**\[=false\] Show the size bar relative to the largest
+sibling instead of the parent directory
+
+**-C**, **\--show-item-count**\[=false\] Show number of items in directory
+
+**-k**, **\--show-in-kib**\[=false\] Show sizes in KiB (or kB with --si) in non-interactive mode
+
+**-M**, **\--show-mtime**\[=false\] Show latest mtime of items in directory
+
+**\--show-symlink-target**\[=false\] Show symlink target (name -> target) in the file list
+
+**\--archive-browsing**\[=false\] Enable browsing of zip/jar/tar archives (tar, tar.gz, tar.bz2, tar.xz)
+
+**\--depth**\[=0\] Show directory structure up to specified depth in non-interactive mode (0 means the flag is ignored); also limits entries inside browsed archives
+
+**\--collapse-path**\[=false\] Collapse single-child directory chains
+
+**\--mouse**\[=false\] Use mouse
+
+**\--si**\[=false\] Show sizes with decimal SI prefixes (kB, MB, GB) instead of binary prefixes (KiB, MiB, GiB)
+
+**\--no-prefix**\[=false\] Show sizes as raw numbers without any prefixes (SI or binary) in non-interactive mode
+
+**\--no-spawn-shell**\[=false\] Do not allow spawning shell
+
+**\--no-confirm-quit**\[=false\] Do not ask for confirmation before quitting after a long scan
+
+**\--ctrl-c-quits**\[=false\] Quit gdu when Ctrl+C is pressed during a scan instead of stopping the scan and keeping results. Esc always stops the scan and keeps the results found so far, regardless of this flag.
+
+**\--no-delete**\[=false\] Do not allow deletions. Applies to the web UI as well: the delete action is hidden and the server rejects delete requests.
+
+Reveal remains available in the web UI because it does not modify scanned
+data. Deletion while a filter is active is disabled by default: the terminal
+UI applies this to time filters, the web UI to any active filter, file-type
+filters included. Set **GDU_ALLOW_DELETE_WITH_FILTER=1** to override the
+check; the displayed tree may then omit files that are still present on
+disk.
+
+**\--no-view-file**\[=false\] Do not allow viewing file contents
+
+**\--trash-command**=\"\" Command used to move items to trash instead of the built-in trash. Used by the terminal UI's D key and the web UI's "Move to Trash" action. The command is evaluated by /bin/sh with the absolute path of the item appended as an argument, which is also exported as GDU_TRASH_PATH. Commands taking their destination last can refer to the path as \"\$1\" instead, in which case it is not appended. The command must not be interactive. Not supported on Windows. For example: trash-put \--trash-dir \~/mytrash or mv -f \"\$1\" \~/mytrash/
+
+**\--web**\[=false\] Run the web UI (serves a browser interface instead of the
+terminal UI). Gdu scans the given directory, prints the URL and serves a
+read-only browser interface for it.
+
+**\--web-listen**=\"\" Address for the web UI to listen on. By default the server
+binds to localhost on a random free port. Binding to a non-loopback address
+makes scan details reachable by other hosts on the network.
+
+**\--web-open**\[=true\] Open the web UI in the default browser on start. Use
+\--web-open=false to only print the URL.
+
+**-f**, **\--input-file** Import analysis from JSON file. If the file is \"-\", read from standard input.
+
+**-o**, **\--output-file** Export all info into file as JSON. If the file is \"-\", write to standard output.
+
+**\--output-attrs** Export only selected JSON attributes (name,asize,dsize,shsize,items,mtime,notreg,ino).
+Requires \--output-file. The *name* attribute is always included and directories always
+carry their *asize*, *dsize* and *items* summary stats so they can be preserved on import.
+
+**\--config-file**=\"$HOME/.gdu.yaml\"             Read config from file
+
+**\--write-config**\[=false\] Write current configuration to file (default is $HOME/.gdu.yaml)
+
+**\--enable-profiling**\[=false\] Enable collection of profiling data and provide it on http://localhost:6060/debug/pprof/
+
+**-D**, **\--db** Store analysis in database (*.sqlite for SQLite, *.badger for BadgerDB)
+
+**-r**, **\--read-from-storage**\[=false\] Use existing database instead of re-scanning
+
+**-v**, **\--version**\[=false\] Print version
+
+# FILE FLAGS
+
+Files and directories may be prefixed by a one-character
+flag with following meaning:
+
+**!**
+
+:   An error occurred while reading this directory.
+
+**.**
+
+:   An error occurred while reading a subdirectory, size may be not correct.
+
+**\@**
+
+:  File is symlink or socket. Symlinks can be shown as *name -> target*
+   (the link target is displayed next to the name, like *ls -l*).
+
+**H**
+
+:  Same file was already counted (hard link).
+
+**e**
+
+:  Directory is empty.
